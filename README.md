@@ -15,21 +15,27 @@ and query the same sources live.
 
 ## Quickstart
 
-```sh
-git clone <repo-url>
-cd brainstem
-npm install
-npm run build
+Try it from a clone:
 
-# In the project that owns brain.toml:
-npx --no-install brainstem init
-npx --no-install brainstem build
+```sh
+git clone <repo-url> && cd brainstem
+npm install
+cd examples/minimal
+npx --no-install brainstem build --check   # clean
+npx --no-install brainstem build           # regenerate everything
+```
+
+Use it in your own project, from the repo root:
+
+```sh
+npx --no-install brainstem init       # write a commented brain.toml
+npx --no-install brainstem build      # compile every enabled target
 npx --no-install brainstem build --check
 npx --no-install brainstem targets
-
-# Configure an MCP host to launch this command from that project:
-npx --no-install brainstem serve --mcp
 ```
+
+Then point any MCP host at `npx --no-install brainstem serve --mcp`, launched from that
+project's directory.
 
 `npx brainstem build` is also the published-package form once brainstem is installed or
 published. `make test` is the single project test command.
