@@ -7,6 +7,7 @@ import { ConfigError, EXAMPLE_CONFIG, loadConfig } from "./config.js";
 import { loadContextFiles } from "./context.js";
 import { documentFromConfig, hasGeneratedMarker } from "./render.js";
 import { targetList } from "./targets/index.js";
+import { serve } from "./mcp/server.js";
 
 interface BuildOptions {
   check: boolean;
@@ -132,6 +133,11 @@ export async function main(argv = process.argv.slice(2), root = process.cwd()): 
   if (command === "targets") {
     if (args.length > 0) usageError("targets takes no options");
     return listTargets(root);
+  }
+  if (command === "serve") {
+    if (args.some((arg) => arg !== "--mcp")) usageError("serve only accepts --mcp");
+    await serve(root);
+    return 0;
   }
   usageError(`unknown command ${command}`);
 }

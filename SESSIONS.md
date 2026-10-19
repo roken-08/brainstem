@@ -6,6 +6,14 @@ Added strict brain.toml validation, deterministic marked Markdown rendering, the
 Blocked on:
 Nothing.
 
+## 2026-10-19 — Read-only MCP server
+Goal:
+Serve the same configured project context live over stdio MCP without adding a write path.
+What changed:
+Added brain_context, search, read, list_sources, and declared-script run_script tools with source-bound paths, caps, and an end-to-end stdio client test.
+Blocked on:
+Nothing.
+
 ## 2026-10-19 — Harness adapters and drift detection
 Goal:
 Compile one document into all five configured harness paths and make generated-file drift fail checks.
