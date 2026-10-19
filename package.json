@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "One brain, every agent.",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "bin": {
     "brainstem": "dist/src/cli.js"
   },

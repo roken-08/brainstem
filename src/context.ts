@@ -20,7 +20,9 @@ export async function loadContextFiles(root: string, config: BrainConfig): Promi
       files.push({ path: configuredPath, content: await readFile(path, "utf8") });
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        throw new Error(`context file "${configuredPath}" does not exist`);
+        // A freshly initialized project may not have its optional context files yet.
+        // Include them as soon as they appear without blocking static compilation.
+        continue;
       }
       throw new Error(`could not read context file "${configuredPath}": ${String(error)}`);
     }

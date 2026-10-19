@@ -7,8 +7,8 @@ export const CONFIG_FILE = "brain.toml";
 export const EXAMPLE_CONFIG = `# brainstem — one brain, every agent
 
 [project]
-name = "acme-api"
-summary = "Billing service. Go, Postgres, no ORM. Deploy is a single container."
+name = "example-service"
+summary = "A small service with documented conventions and a single test command."
 
 [conventions]
 rules = [

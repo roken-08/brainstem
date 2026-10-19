@@ -1,19 +1,125 @@
 # brainstem
 
-One brain, every agent.
+**Demo:** [run the 60–90 second walkthrough](docs/demo.md) · **one brain, every agent.**
 
-Write your agent's rules and project context once. brainstem compiles them into every
-harness's native format — `AGENTS.md`, `CLAUDE.md`, `.cursor/rules`, Copilot instructions,
-skill manifests — and serves the same context live over MCP.
+## The thesis
+
+There are exactly two ways to get context into an agent, and real setups need both:
+
+1. **Static artefacts** — generated files a harness reads automatically at startup.
+2. **A live pipe** — an MCP server the agent queries while it works.
+
+brainstem owns both from one `brain.toml`. The compiler carries behaviour; the read-only
+MCP server carries project knowledge. Change the config once, then rebuild the harness files
+and query the same sources live.
+
+## Quickstart
 
 ```sh
-npx brainstem build          # compile brain.toml into instruction files
-npx brainstem build --check  # fail if any of them drifted
-npx brainstem serve          # MCP server over stdio
+git clone <repo-url>
+cd brainstem
+npm install
+npm run build
+
+# In the project that owns brain.toml:
+npx --no-install brainstem init
+npx --no-install brainstem build
+npx --no-install brainstem build --check
+npx --no-install brainstem targets
+
+# Configure an MCP host to launch this command from that project:
+npx --no-install brainstem serve --mcp
 ```
 
-Static artefacts for behaviour, a live pipe for knowledge, one source of truth for both.
+`npx brainstem build` is also the published-package form once brainstem is installed or
+published. `make test` is the single project test command.
 
-Read-only by design. No telemetry, no network, no secrets.
+## What it builds
 
-Work in progress.
+The compiler reads `brain.toml` and writes only enabled targets:
+
+| Target | Output |
+| --- | --- |
+| agents | `AGENTS.md` |
+| claude | `CLAUDE.md` |
+| cursor | `.cursor/rules/brainstem.mdc` |
+| copilot | `.github/copilot-instructions.md` |
+| skill | `.skills/brainstem/SKILL.md` |
+
+Every generated file has a schema-versioned content hash marker. `build --check` exits 1
+for a missing or stale target, making drift a CI failure. An existing unmarked file is
+never silently clobbered; use `--force` only when replacing it intentionally.
+
+The MCP server exposes five read-only tools over stdio:
+
+- `brain_context` — summary, conventions, and configured sources
+- `search` — capped regular-expression search over configured source directories
+- `read` — capped file reads with an optional line range
+- `list_sources` — configured sources with rough file counts and sizes
+- `run_script` — runs only a named command explicitly declared in `[scripts]`
+
+## Config
+
+Keep the source of truth small and committed. `brainstem init` writes a commented example;
+`examples/minimal/brain.toml` is a complete working project.
+
+```toml
+[project]
+name = "minimal-service"
+summary = "A small documented service."
+
+[conventions]
+rules = ["Read before changing.", "Run tests before claiming success."]
+
+[context]
+sources = ["docs", "notes"]
+files = ["README.md"]
+
+[scripts]
+test = "node -e \"console.log('ok')\""
+
+[targets]
+agents = true
+claude = true
+cursor = true
+copilot = true
+skill = true
+```
+
+Unknown keys are errors. Paths are project-relative. Context sources are read-only from
+the server's perspective, and no credentials belong in this file.
+
+## Development
+
+```sh
+make test
+docker build -t brainstem .
+docker run --rm brainstem --help
+```
+
+The Docker image installs the locked dependencies, compiles TypeScript, and runs the same
+CLI. To operate on a project from the image, mount it and set the working directory:
+
+```sh
+docker run --rm -i -v "$PWD:/workspace" -w /workspace brainstem build --check
+```
+
+## Non-goals and boundaries
+
+- Not a chat UI, agent, or model router.
+- No cloud, accounts, telemetry, or network calls beyond the MCP stdio pipe.
+- No secret handling; config points at paths and never stores credentials.
+- No auto-editing of a user's knowledge base.
+- The MCP server has no write tool. `run_script` runs only commands the project owner has
+  explicitly declared, so declare safe test/lint commands.
+
+## Layout
+
+```text
+src/config.ts       parse and validate brain.toml
+src/render.ts       shared document model and markers
+src/targets/        one adapter per harness
+src/mcp/            stdio server, tools, and source search
+tests/              compiler, drift, and real-client MCP tests
+examples/minimal/   tiny demo project
+```

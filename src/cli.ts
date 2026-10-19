@@ -2,6 +2,8 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 import { ConfigError, EXAMPLE_CONFIG, loadConfig } from "./config.js";
 import { loadContextFiles } from "./context.js";
@@ -115,6 +117,8 @@ function help(): void {
 Usage:
   brainstem init
   brainstem build [--check] [--force] [--out <dir>]
+  brainstem serve [--mcp]
+  brainstem targets
 `);
 }
 
@@ -142,7 +146,8 @@ export async function main(argv = process.argv.slice(2), root = process.cwd()): 
   usageError(`unknown command ${command}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const invokedPath = process.argv[1] ? realpathSync(process.argv[1]) : "";
+if (invokedPath === realpathSync(fileURLToPath(import.meta.url))) {
   main().then((code) => {
     process.exitCode = code;
   }).catch((error: unknown) => {

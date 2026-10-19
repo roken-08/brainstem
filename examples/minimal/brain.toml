@@ -1,0 +1,27 @@
+# brainstem — one brain, every agent
+
+[project]
+name = "minimal-service"
+summary = "A tiny example project whose rules and notes are shared with every agent."
+
+[conventions]
+rules = [
+  "Read the relevant file before changing it.",
+  "Run the declared test command before claiming a change works.",
+  "Keep responses short and state any remaining uncertainty.",
+  "Prefer the smallest complete change.",
+]
+
+[context]
+sources = ["docs", "notes"]
+files = ["README.md"]
+
+[scripts]
+test = "node -e \"console.log('minimal checks pass')\""
+
+[targets]
+agents = true
+claude = true
+cursor = true
+copilot = true
+skill = true
